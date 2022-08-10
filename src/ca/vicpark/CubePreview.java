@@ -3,6 +3,8 @@ package ca.vicpark;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +36,8 @@ public class CubePreview extends JFrame {
     Cube linkedCube = null;
     ArrayList<ColoredPolygon> blockFaces = new ArrayList<ColoredPolygon>();
     JPanel drawingBoard = null;
+    JButton toRandomize = null;
+    JButton previousState = null;
 
     public void setLinkedCube(Cube cube) {
         this.linkedCube = cube;
@@ -107,7 +111,19 @@ public class CubePreview extends JFrame {
         setDefaultLookAndFeelDecorated(true);
         setMaximumSize(new Dimension(640, 480));
         setMinimumSize(new Dimension(640, 480));
+        setLayout(null);
         setAlwaysOnTop(true);
+
+        this.toRandomize = new JButton("Randomize");
+        this.toRandomize.setSize(128, 64);
+        this.toRandomize.setLocation(90, 18);
+        this.toRandomize.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                linkedCube.randomize(1);
+                update();
+            }
+        });
 
         try {
             img = ImageIO.read(new File("img/rcube.jpg"));
@@ -160,11 +176,56 @@ public class CubePreview extends JFrame {
                 }
             }
         };
+        drawingBoard.setLayout(null);
+        drawingBoard.add(toRandomize);
 
         add(this.drawingBoard);
+        this.drawingBoard.setLocation(0, 0);
+        this.drawingBoard.setSize(640, 480);
         setVisible(true);
         while (blockFaces.isEmpty()) {
             Thread.sleep(200);
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            int test = 0;
+            CubePreview cp = new CubePreview("Cube Preview");
+            Cube cube = new Cube();
+            cp.setLinkedCube(cube);
+            cp.update();
+
+            switch (test) {
+                case 0:
+                    Scanner scanner = new Scanner(System.in);
+                    int axis, row, direction;
+                    System.out.println("Scanner set up correctly. Start entering values:");
+                    while (scanner.hasNextLine()) {
+                        String input = scanner.nextLine();
+                        if (input.equals("reset")) {
+                            System.out.println("to reset...");
+                            cube.simuReset();
+                        } else {
+                            String[] values = input.split(",");
+                            axis = Integer.valueOf(values[0]);
+                            row = Integer.valueOf(values[1]);
+                            direction = Integer.valueOf(values[2]);
+                            cube.localOperation(axis, row, direction, "Viewer Manual");
+                        }
+                        cp.update();
+                    }
+                    break;
+                case 1:
+                    cube.randomize(10);
+                    while (true) {
+                        cube.randomize(1);
+                        cp.update();
+                        Thread.sleep(3000);
+                    }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -176,33 +237,8 @@ public class CubePreview extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            CubePreview cp = new CubePreview("Cube Preview");
-            Cube cube = new Cube();
-            cp.setLinkedCube(cube);
-            cp.update();
-
-            Scanner scanner = new Scanner(System.in);
-            int axis, row, direction;
-            System.out.println("Scanner set up correctly. Start entering values:");
-            while (scanner.hasNextLine()) {
-                String input = scanner.nextLine();
-                if(input.equals("reset")){
-                    System.out.println("to reset...");
-                    cube.simuReset();
-                }else {
-                    String[] values = input.split(",");
-                    axis = Integer.valueOf(values[0]);
-                    row = Integer.valueOf(values[1]);
-                    direction = Integer.valueOf(values[2]);
-                    cube.localOperation(axis, row, direction, "Viewer Manual");
-                }
-                cp.update();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public Insets getInsets() {
+        return new Insets(20, 10, 10, 10);
     }
 }

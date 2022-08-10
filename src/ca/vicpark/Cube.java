@@ -14,6 +14,7 @@ public class Cube implements Cloneable {
     };
     private static final int DEFAULT_RANDOM_STEP = 15;
     private ArrayList<String> history = new ArrayList<String>();
+    private boolean isPrevious = false;
 
     private int[][][] data = {
             {
@@ -73,7 +74,7 @@ public class Cube implements Cloneable {
         Random gen = new Random();
         for (int _i = 0; _i < step; _i++) {
             int _a = gen.nextInt(3), _l = gen.nextInt(3) + 1, _d = gen.nextInt(2);
-            localOperation(_a, _l, _d, "Randomizing");
+            localOperation(_a, _l, _d, (step == 1) ? "manual(for one)" : "Randomizing");
         }
     }
 
@@ -113,6 +114,10 @@ public class Cube implements Cloneable {
         return (face == 0) ? (data[axis][row - 1][number - 1]) : ((face == 1) ? data[axis + 3][row - 1][number - 1] : null);
     }
 
+    public boolean isAtPreviousState() {
+        return this.isPrevious;
+    }
+
     public int setColor(int axis, int face, int row, int number, int color) { // the same as above(getColor)
         if (axis > 2 || axis < 0) {
             return -1; // returns -1 when parameters fail to pass tests.
@@ -150,15 +155,15 @@ public class Cube implements Cloneable {
         return cloned;
     }
 
-    private final int[][] cacheFaceRotation(int axis, int face, int rotation){
+    private final int[][] cacheFaceRotation(int axis, int face, int rotation) {
         int[][] toReturn = new int[3][3];
-        for(int _i = 0; _i < 3; _i++){
-            for (int _ii = 0; _ii < 3; _ii++){
+        for (int _i = 0; _i < 3; _i++) {
+            for (int _ii = 0; _ii < 3; _ii++) {
                 if (rotation == DIR_C) {
-                    toReturn[_i][_ii] = data[axis + ((face == 1) ? 3 : 0)][2-_ii][_i];
+                    toReturn[_i][_ii] = data[axis + ((face == 1) ? 3 : 0)][2 - _ii][_i];
                     // 1,1 -> 3,1
-                }else {
-                    toReturn[_i][_ii] = data[axis + ((face == 1) ? 3 : 0)][_ii][2-_i];
+                } else {
+                    toReturn[_i][_ii] = data[axis + ((face == 1) ? 3 : 0)][_ii][2 - _i];
                 }
             }
         }
@@ -183,11 +188,7 @@ public class Cube implements Cloneable {
 
         int[] upCached = {0, 0, 0}, downCached = {0, 0, 0}; // Cached values of the unchanged state.
         int[] leftCached = {0, 0, 0}, rightCached = {0, 0, 0};
-        int[][] faceCached = {
-            {0,0,0},
-            {0,0,0},
-            {0,0,0}
-        };
+        int[][] faceCached = new int[3][3];
         switch (axis) {
             case AXIS_X:
                 switch (level) {
@@ -202,10 +203,10 @@ public class Cube implements Cloneable {
                         }
 
                         if (direction == 1) {
-                            faceCached = this.cacheFaceRotation(axis,1,direction );
+                            faceCached = this.cacheFaceRotation(axis, 1, direction);
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Z, 1, 2 - _i + 1, 3, leftCached[_i]);
@@ -216,8 +217,8 @@ public class Cube implements Cloneable {
                         } else {
                             faceCached = this.cacheFaceRotation(axis, 1, direction);
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
                                 setColor(AXIS_Z, 1, 2 - _i + 1, 3, rightCached[_i]);
                                 setColor(AXIS_Y, 0, _i + 1, 1, downCached[_i]);
@@ -261,10 +262,10 @@ public class Cube implements Cloneable {
                             rightCached[_i] = getColor(AXIS_Y, 0, _i + 1, 3);
                         }
                         if (direction == 1) {
-                            faceCached = this.cacheFaceRotation(axis,0,direction );
+                            faceCached = this.cacheFaceRotation(axis, 0, ((level == 3) ? (-direction + 1) : direction));
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Z, 1, 2 - _i + 1, 1, leftCached[_i]);
@@ -273,10 +274,10 @@ public class Cube implements Cloneable {
                                 setColor(AXIS_Y, 1, 2 - _i + 1, 1, downCached[_i]);
                             }
                         } else {
-                            faceCached = this.cacheFaceRotation(axis,0,direction );
+                            faceCached = this.cacheFaceRotation(axis, 0, ((level == 3) ? (-direction + 1) : direction));
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Z, 1, 2 - _i + 1, 1, rightCached[_i]);
@@ -300,11 +301,11 @@ public class Cube implements Cloneable {
                             rightCached[_i] = getColor(AXIS_X, 1, _i + 1, 1); // verified
                         }
                         if (direction == 1) { // rotate right
-                            faceCached = this.cacheFaceRotation(axis,1,direction );
+                            faceCached = this.cacheFaceRotation(axis, 1, direction);
 
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Z, 1, 3, _i + 1, leftCached[_i]); // reversed
@@ -316,10 +317,10 @@ public class Cube implements Cloneable {
 
                             }
                         } else { // rotate left
-                            faceCached = this.cacheFaceRotation(axis,1,direction );
+                            faceCached = this.cacheFaceRotation(axis, 1, direction);
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Z, 1, 3, _i + 1, rightCached[_i]); // reversed
@@ -371,10 +372,10 @@ public class Cube implements Cloneable {
                             rightCached[_i] = getColor(AXIS_X, 1, _i + 1, 3);
                         }
                         if (direction == 1) {
-                            faceCached = this.cacheFaceRotation(axis,0,direction );
+                            faceCached = this.cacheFaceRotation(axis, 0, ((level == 3) ? (-direction + 1) : direction));
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Z, 1, 1, _i + 1, leftCached[_i]); // reversed
@@ -385,16 +386,16 @@ public class Cube implements Cloneable {
                                 setColor(AXIS_X, 0, 2 - _i + 1, 1, downCached[_i]); // non-reversed
                             }
                         } else {
-                            faceCached = this.cacheFaceRotation(axis,0,direction );
+                            faceCached = this.cacheFaceRotation(axis, 0, ((level == 3) ? (-direction + 1) : direction));
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Z, 1, 1, _i + 1, rightCached[_i]); // reversed
                                 setColor(AXIS_X, 1, _i + 1, 3, downCached[_i]); // reversed
 
-                                setColor(AXIS_Z, 0, 3, 2-_i + 1, leftCached[_i]); // non-reversed
+                                setColor(AXIS_Z, 0, 3, 2 - _i + 1, leftCached[_i]); // non-reversed
                                 setColor(AXIS_X, 0, 2 - _i + 1, 1, upCached[_i]); // non-reversed
                             }
                         }
@@ -413,11 +414,11 @@ public class Cube implements Cloneable {
                             rightCached[_i] = getColor(AXIS_X, 1, 1, 2 - _i + 1);
                         }
                         if (direction == 1) {
-                            faceCached = this.cacheFaceRotation(axis,1,direction );
+                            faceCached = this.cacheFaceRotation(axis, 1, direction);
 
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Y, 0, 1, 2 - _i + 1, leftCached[_i]);
@@ -426,10 +427,10 @@ public class Cube implements Cloneable {
                                 setColor(AXIS_X, 0, 1, 2 - _i + 1, downCached[_i]);
                             }
                         } else {
-                            faceCached = this.cacheFaceRotation(axis,1,direction );
+                            faceCached = this.cacheFaceRotation(axis, 1, direction);
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Y, 0, 1, 2 - _i + 1, rightCached[_i]);
@@ -474,10 +475,10 @@ public class Cube implements Cloneable {
                             rightCached[_i] = getColor(AXIS_X, 1, 3, 2 - _i + 1);
                         }
                         if (direction == 1) {
-                            faceCached = this.cacheFaceRotation(axis,0,direction );
+                            faceCached = this.cacheFaceRotation(axis, 0, ((level == 3) ? (-direction + 1) : direction));
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Y, 0, 3, 2 - _i + 1, leftCached[_i]);
@@ -486,10 +487,10 @@ public class Cube implements Cloneable {
                                 setColor(AXIS_X, 0, 3, 2 - _i + 1, downCached[_i]);
                             }
                         } else {
-                            faceCached = this.cacheFaceRotation(axis,0,direction );
+                            faceCached = this.cacheFaceRotation(axis, 0, ((level == 3) ? (-direction + 1) : direction));
                             for (int _i = 0; _i < 3; _i++) {
-                                for (int _ii = 0; _ii < 3; _ii++){
-                                    data[axis+((level == 3)?0:3)][_i][_ii] = faceCached[_i][_ii];
+                                for (int _ii = 0; _ii < 3; _ii++) {
+                                    data[axis + ((level == 3) ? 0 : 3)][_i][_ii] = faceCached[_i][_ii];
                                 }
 
                                 setColor(AXIS_Y, 0, 3, 2 - _i + 1, rightCached[_i]);

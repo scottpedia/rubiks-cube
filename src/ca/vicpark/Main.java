@@ -1,43 +1,43 @@
 package ca.vicpark;
 
-import java.util.ArrayList;
-
 public class Main {
 
     public static void main(String[] args) throws CloneNotSupportedException {
         // write your code here
-        Cube instance = new Cube();
-        instance.randomize(4);
-//        instance.localOperation(Cube.AXIS_Z,3,0,"manual");
-        System.out.println("Randomized cube:\n" + instance.toString());
-
-        ArrayList<Cube> latestGen = new ArrayList<Cube>(), previousGen = new ArrayList<Cube>();
-        previousGen.add(instance);
-        int _counter = 0;
+        int randomizeSteps = 7;
+        int numberOfThreads = 1000;
+        Cube[] cubes = new Cube[numberOfThreads];
         try {
-            do {
-                for (Cube c : previousGen) { // iterate the 3x3x2=18 possibilities upon each and every Cube setting from the previous Gen.
-                    for (int axis = 0; axis < 3; axis++) {
-                        for (int level = 1; level < 4; level++) {
-                            for (int direction = 0; direction < 2; direction++) {
-                                Cube cloned = c.clonedOperation(axis, level, direction);
-                                if (cloned.isRestored()) {
-                                    for (Object _o: cloned.getHistory()) System.out.println(_o);
-                                    System.out.println("Restoration Achieved.");
-                                    throw new Exception("Restoration Achieved.");
-                                } else {
-                                    latestGen.add(cloned);
-                                }
-                            }
-                        }
+            Cube instance = new Cube();
+            CubePreview preview = new CubePreview("Cube Preview");
+            preview.setLinkedCube(instance);
+            instance.randomize(randomizeSteps);
+            preview.update();
+            for (int i = 0; i < cubes.length; i++) {
+                cubes[i] = (Cube) instance.clone();
+            }
+            int rounds = 0;
+            while (true) {
+                for (int i = 0; i < cubes.length; i++) {
+                    cubes[i].randomize(1);
+                    if (cubes[i].isRestored()) {
+                        System.out.println("Restoration Achieved, after " + rounds + " rounds, " + i + " tries.");
+                        for (Object _h : cubes[i].getHistory()) System.out.println(_h);
+                        throw new Exception();
                     }
                 }
-                System.out.println(++_counter + " round finished, no restoration yet.");
-                previousGen = (ArrayList<Cube>) latestGen.clone();
-                latestGen.clear();
-                System.gc();
-            } while (true);
-        }catch (Exception e){
+                if (rounds % 5000 == 0) {
+                    System.out.println(rounds + " have passed, no restoration yet...");
+                }
+                if (rounds % 100 == 0 && rounds != 0) {
+                    for (int i = 0; i < cubes.length; i++) {
+                        cubes[i] = (Cube) instance.clone();
+                    }
+                    System.gc();
+                }
+                rounds++;
+            }
+        } catch (Exception e) {
             System.exit(0);
         }
     }
