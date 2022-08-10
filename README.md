@@ -24,3 +24,8 @@ work out as well.
 All the attempts are based on the assumption that through the brute-force type
 of trying we can get a cube restored programmatically. But it seems that I was
 wrong.
+
+> The screenshot of the preview program I created to aid the mapping
+>of the cube's faces. It is based on Java Swing.
+
+![screenshot](img/screenshot.png)
